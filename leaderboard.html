@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IEEE Tournament Leaderboard</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #7c3aed;
+            --accent-color: #f59e0b;
+            --success-color: #10b981;
+            --background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --text-dark: #1f2937;
+            --text-light: #6b7280;
+            --gold: #ffd700;
+            --silver: #c0c0c0;
+            --bronze: #cd7f32;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--background);
+            min-height: 100vh;
+            color: var(--text-dark);
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1rem 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--primary-color);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .logo-text {
+            color: white;
+        }
+
+        .logo-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .logo-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin: 0;
+        }
+
+        .stats-bar {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1rem 2rem;
+            margin: 2rem auto;
+            max-width: 1200px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .leaderboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem 2rem;
+        }
+
+        .leaderboard-title {
+            text-align: center;
+            color: white;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .podium {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 3rem;
+            align-items: end;
+        }
+
+        .podium-place {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 2rem 1rem;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .podium-place.first {
+            order: 2;
+            transform: scale(1.05);
+            z-index: 3;
+        }
+
+        .podium-place.second {
+            order: 1;
+            z-index: 2;
+        }
+
+        .podium-place.third {
+            order: 3;
+            z-index: 1;
+        }
+
+        .podium-rank {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .podium-place.first .podium-rank { background: var(--gold); }
+        .podium-place.second .podium-rank { background: var(--silver); }
+        .podium-place.third .podium-rank { background: var(--bronze); }
+
+        .podium-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            margin: 1rem auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .podium-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-dark);
+        }
+
+        .podium-reg {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1rem;
+        }
+
+        .podium-score {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .leaderboard-table {
+            background: var(--card-bg);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .table-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 1rem;
+            font-weight: 600;
+            display: grid;
+            grid-template-columns: 60px 2fr 1fr 80px 80px 100px 120px;
+            gap: 1rem;
+            align-items: center;
+            text-align: center;
+        }
+
+        .table-row {
+            padding: 1rem;
+            display: grid;
+            grid-template-columns: 60px 2fr 1fr 80px 80px 100px 120px;
+            gap: 1rem;
+            align-items: center;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            transition: background-color 0.2s ease;
+        }
+
+        .table-row:hover {
+            background-color: rgba(37, 99, 235, 0.05);
+        }
+
+        .table-row:last-child {
+            border-bottom: none;
+        }
+
+        .rank-badge {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: white;
+            font-size: 0.9rem;
+            margin: 0 auto;
+            text-align: center;
+            line-height: 1;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .rank-badge.top-10 {
+            background: linear-gradient(135deg, var(--gold), var(--accent-color));
+        }
+
+        .rank-badge.top-50 {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        }
+
+        .rank-badge.other {
+            background: var(--text-light);
+        }
+
+        .student-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .student-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .student-details h4 {
+            margin: 0;
+            font-size: 1rem;
+            color: var(--text-dark);
+        }
+
+        .student-details p {
+            margin: 0;
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+
+        .score-display {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-align: center;
+        }
+
+        .levels-badge {
+            background: var(--success-color);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-align: center;
+            margin: 0 auto;
+            display: inline-block;
+        }
+
+        .accuracy-bar {
+            width: 60px;
+            height: 8px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .accuracy-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-color), var(--success-color));
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .time-remaining {
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: white;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-left: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .refresh-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .refresh-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: white;
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.6;
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .stats-bar {
+                grid-template-columns: repeat(2, 1fr);
+                margin: 1rem;
+                padding: 1rem;
+            }
+
+            .podium {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .podium-place {
+                order: initial !important;
+                transform: none !important;
+            }
+
+            .table-header,
+            .table-row {
+                grid-template-columns: 50px 2fr 60px;
+                gap: 0.5rem;
+            }
+
+            .table-header span:nth-child(n+4),
+            .table-row > *:nth-child(n+4) {
+                display: none;
+            }
+
+            .leaderboard-container {
+                padding: 0 1rem 1rem;
+            }
+
+            .leaderboard-title {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">IEEE</div>
+                <div class="logo-text">
+                    <h1 class="logo-title">Tournament Leaderboard</h1>
+                    <p class="logo-subtitle">Computer Society Inauguration Challenge</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="stats-bar" id="stats-bar">
+        <div class="stat-item">
+            <div class="stat-value" id="total-participants">-</div>
+            <div class="stat-label">Total Participants</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="highest-score">-</div>
+            <div class="stat-label">Highest Score</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="average-score">-</div>
+            <div class="stat-label">Average Score</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="average-accuracy">-</div>
+            <div class="stat-label">Average Accuracy</div>
+        </div>
+    </div>
+
+    <div class="leaderboard-container">
+        <h1 class="leaderboard-title">🏆 Live Leaderboard</h1>
+        
+        <div class="podium" id="podium"></div>
+
+        <div class="leaderboard-table">
+            <div class="table-header">
+                <span>Rank</span>
+                <span>Student</span>
+                <span>Registration</span>
+                <span>Score</span>
+                <span>Levels</span>
+                <span>Accuracy</span>
+                <span>Time Left</span>
+            </div>
+            <div id="leaderboard-body"></div>
+        </div>
+    </div>
+
+    <div class="loading" id="loading">
+        <div class="loading-spinner"></div>
+        <p>Loading tournament results...</p>
+    </div>
+
+    <button class="refresh-btn" onclick="loadLeaderboard()" title="Refresh Leaderboard">
+        🔄
+    </button>
+
+    <script>
+        let refreshInterval;
+        let isLoading = false;
+
+        // Initialize leaderboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadLeaderboard();
+            // Auto-refresh every 30 seconds
+            refreshInterval = setInterval(loadLeaderboard, 30000);
+        });
+
+        async function loadLeaderboard() {
+            if (isLoading) return;
+            isLoading = true;
+
+            try {
+                // Load statistics
+                const statsResponse = await fetch('/api/stats');
+                const statsData = await statsResponse.json();
+                
+                if (statsData.success) {
+                    updateStats(statsData.stats);
+                }
+
+                // Load leaderboard
+                const leaderboardResponse = await fetch('/api/leaderboard?limit=100');
+                const leaderboardData = await leaderboardResponse.json();
+                
+                if (leaderboardData.success) {
+                    displayLeaderboard(leaderboardData.leaderboard);
+                    document.getElementById('loading').style.display = 'none';
+                } else {
+                    showError('Failed to load leaderboard data');
+                }
+            } catch (error) {
+                console.error('Error loading leaderboard:', error);
+                showError('Connection error. Please check your internet connection.');
+            } finally {
+                isLoading = false;
+            }
+        }
+
+        function updateStats(stats) {
+            document.getElementById('total-participants').textContent = stats.total_participants || 0;
+            document.getElementById('highest-score').textContent = stats.highest_score || 0;
+            document.getElementById('average-score').textContent = Math.round(stats.average_score) || 0;
+            document.getElementById('average-accuracy').textContent = Math.round(stats.average_accuracy) + '%' || '0%';
+        }
+
+        function displayLeaderboard(leaderboard) {
+            if (!leaderboard || leaderboard.length === 0) {
+                showEmptyState();
+                return;
+            }
+
+            // Display top 3 in podium
+            displayPodium(leaderboard.slice(0, 3));
+            
+            // Display rest in table
+            displayTable(leaderboard);
+        }
+
+        function displayPodium(top3) {
+            const podium = document.getElementById('podium');
+            podium.innerHTML = '';
+
+            if (top3.length === 0) return;
+
+            top3.forEach((student, index) => {
+                const place = document.createElement('div');
+                place.className = `podium-place ${['first', 'second', 'third'][index]}`;
+                
+                place.innerHTML = `
+                    <div class="podium-rank">${student.rank}</div>
+                    <div class="podium-avatar">${getInitials(student.student_name)}</div>
+                    <div class="podium-name">${student.student_name || 'Anonymous'}</div>
+                    <div class="podium-reg">${student.registration_number}</div>
+                    <div class="podium-score">${student.final_score}</div>
+                `;
+                
+                podium.appendChild(place);
+            });
+        }
+
+        function displayTable(leaderboard) {
+            const tbody = document.getElementById('leaderboard-body');
+            tbody.innerHTML = '';
+
+            leaderboard.forEach(student => {
+                const row = document.createElement('div');
+                row.className = 'table-row';
+                
+                const rankClass = student.rank <= 10 ? 'top-10' : 
+                                 student.rank <= 50 ? 'top-50' : 'other';
+                
+                row.innerHTML = `
+                    <div class="rank-badge ${rankClass}">${student.rank}</div>
+                    <div class="student-info">
+                        <div class="student-avatar">${getInitials(student.student_name)}</div>
+                        <div class="student-details">
+                            <h4>${student.student_name || 'Anonymous'}</h4>
+                            <p>${student.registration_number}</p>
+                        </div>
+                    </div>
+                    <div class="score-display">${student.final_score}</div>
+                    <div class="levels-badge">${student.levels_completed}/5</div>
+                    <div class="accuracy-bar">
+                        <div class="accuracy-fill" style="width: ${student.accuracy_rate}%"></div>
+                    </div>
+                    <div class="time-remaining">${formatTime(student.time_remaining)}</div>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        function getInitials(name) {
+            if (!name || name === 'Anonymous') return '👤';
+            return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+        }
+
+        function formatTime(timeInMs) {
+            if (!timeInMs) return '0:00';
+            const minutes = Math.floor(timeInMs / 60000);
+            const seconds = Math.floor((timeInMs % 60000) / 1000);
+            return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function showError(message) {
+            const loading = document.getElementById('loading');
+            loading.innerHTML = `
+                <div style="color: #ef4444; font-size: 1.2rem;">
+                    ❌ ${message}
+                </div>
+                <button onclick="loadLeaderboard()" style="
+                    margin-top: 1rem; 
+                    padding: 0.5rem 1rem; 
+                    background: #2563eb; 
+                    color: white; 
+                    border: none; 
+                    border-radius: 8px; 
+                    cursor: pointer;
+                ">Try Again</button>
+            `;
+            loading.style.display = 'block';
+        }
+
+        function showEmptyState() {
+            const tbody = document.getElementById('leaderboard-body');
+            tbody.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">🎮</div>
+                    <h3>No participants yet</h3>
+                    <p>The tournament hasn't started or no scores have been submitted.</p>
+                </div>
+            `;
+            document.getElementById('podium').innerHTML = '';
+        }
+
+        // Cleanup interval on page unload
+        window.addEventListener('beforeunload', function() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+        });
+    </script>
+</body>
+</html>
